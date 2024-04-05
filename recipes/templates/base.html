@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">Recipes</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="breakfastDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        Breakfast
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="breakfastDropdown">
+                        {% for br_category in br_category %}
+                        <li><a class="dropdown-item" href="{% url 'recipe_filter_by' br_category.pk %}">{{ br_category.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="lunchDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        Lunch
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="lunchDropdown">
+                        {% for lunch_category in lunch_category %}
+                        <li><a class="dropdown-item" href="{% url 'recipe_filter_by' lunch_category.pk %}">{{ lunch_category.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="dinnerDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        Dinner
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="dinnerDropdown">
+                        {% for dinner_category in dinner_category %}
+                        <li><a class="dropdown-item" href="{% url 'recipe_filter_by' dinner_category.pk %}">{{ dinner_category.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'category_list' %}">Categoriya</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'recipe_list' %}">Ritseplar</a>
+                </li>
+            </ul>
+            <form class="d-flex" action="{% url 'search_results' %}" method="GET">
+                <input class="form-control me-2" type="search" name="q" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<main>
+    {% block content %}
+    <div class="container mt-5">
+
+        <div class="container mt-5">
+            <h1>Recipes</h1>
+            <div class="row">
+                {% for recipe in recipes %}
+                <div class="col-md-3">
+                    <div class="card mb-4 shadow-sm">
+                        <img src="{{ recipe.image.url }}" class="card-img-top" alt="{{ recipe.image.url }}">
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="{% url 'recipe_detail' recipe.pk %}">{{ recipe.title }}</a>
+                            </h5>
+                            <p class="card-text">{{ recipe.content|truncatewords:50 }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+    {% endblock %}
+</main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
