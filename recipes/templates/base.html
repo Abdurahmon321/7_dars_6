@@ -24,7 +24,8 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="breakfastDropdown">
                         {% for br_category in br_category %}
-                        <li><a class="dropdown-item" href="{% url 'recipe_filter_by' br_category.pk %}">{{ br_category.name }}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'recipe_filter_by' br_category.pk %}">{{
+                            br_category.name }}</a></li>
                         {% endfor %}
                     </ul>
                 </li>
@@ -35,7 +36,8 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="lunchDropdown">
                         {% for lunch_category in lunch_category %}
-                        <li><a class="dropdown-item" href="{% url 'recipe_filter_by' lunch_category.pk %}">{{ lunch_category.name }}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'recipe_filter_by' lunch_category.pk %}">{{
+                            lunch_category.name }}</a></li>
                         {% endfor %}
                     </ul>
                 </li>
@@ -46,7 +48,8 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="dinnerDropdown">
                         {% for dinner_category in dinner_category %}
-                        <li><a class="dropdown-item" href="{% url 'recipe_filter_by' dinner_category.pk %}">{{ dinner_category.name }}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'recipe_filter_by' dinner_category.pk %}">{{
+                            dinner_category.name }}</a></li>
                         {% endfor %}
                     </ul>
                 </li>
@@ -62,12 +65,33 @@
                 <input class="form-control me-2" type="search" name="q" placeholder="Search" aria-label="Search">
                 <button class="btn btn-outline-success" type="submit">Search</button>
             </form>
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                ...
+            </ul>
+            <form class="d-flex">
+                {% if user.is_authenticated %}
+                <a href="{% url 'logout' %}" class="btn btn-outline-primary">Chiqish</a>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-outline-success me-2" type="submit">Login</a>
+                <a href="{% url 'signup' %}" class="btn btn-outline-primary" type="submit">Sign Up</a>
+                {% endif %}
+            </form>
+
         </div>
     </div>
 </nav>
 
 <main>
     {% block content %}
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
     <div class="container mt-5">
 
         <div class="container mt-5">

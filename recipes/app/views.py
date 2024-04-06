@@ -1,7 +1,9 @@
+from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 
-from .forms import RecipeForm, CategoryForm, CommentForm, MealCategoryForm
+from .forms import RecipeForm, CategoryForm, CommentForm, MealCategoryForm, UserLoginForm, UserSignupForm
+from django.contrib import messages
 # Create your views here.
 from .models import Recipe, Category, MealCategory
 
@@ -35,6 +37,7 @@ def category_create(request):
         form = MealCategoryForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, "Categoriya yaratildi")
             return redirect('category_list')
     else:
         form = CategoryForm()
@@ -47,16 +50,18 @@ def category_update(request, pk):
         form = CategoryForm(request.POST, instance=category)
         if form.is_valid():
             form.save()
+            messages.success(request, "Categoriya o'zgartirildi")
             return redirect('category_list')
     else:
         form = CategoryForm(instance=category)
-    return render(request, 'category_form.html', {'form': form})
+    return render(request, 'category/category_form.html', {'form': form})
 
 
 def category_delete(request, pk):
     category = get_object_or_404(MealCategory, pk=pk)
     if request.method == 'POST':
         category.delete()
+        messages.success(request, "Categoriya o'chirildi")
         return redirect('category_list')
     return render(request, 'category/category_confirm_delete.html', {'category': category})
 
@@ -80,6 +85,7 @@ def recipe_detail(request, pk):
             comment = form.save(commit=False)
             comment.recipe = recipe
             comment.save()
+            messages.success(request, " Comment qo'shildi")
             return redirect('recipe_detail', pk=pk)
     else:
         form = CommentForm()
@@ -89,8 +95,10 @@ def recipe_detail(request, pk):
 def recipe_create(request):
     if request.method == 'POST':
         form = RecipeForm(request.POST, request.FILES)
+
         if form.is_valid():
             form.save()
+            messages.success(request, 'Recipe yaratildi')
             return redirect('recipe_list')
     else:
         form = RecipeForm()
@@ -103,6 +111,7 @@ def recipe_update(request, pk):
         form = RecipeForm(request.POST, request.FILES, instance=recipe)
         if form.is_valid():
             form.save()
+            messages.success(request, "Recipe o'zgartirildi")
             return redirect('recipe_list')
     else:
         form = RecipeForm(instance=recipe)
@@ -113,6 +122,7 @@ def recipe_delete(request, pk):
     recipe = get_object_or_404(Recipe, pk=pk)
     if request.method == 'POST':
         recipe.delete()
+        messages.success(request, "Recipe o'chirildi")
         return redirect('recipe_list')
     return render(request, 'recipes/recipe_confirm_delete.html', {'recipe': recipe})
 
@@ -144,3 +154,41 @@ def search_results(request):
     return render(request, 'recipes/recipe_list.html', {'recipes': recipes})
 
 
+def user_login(request):
+    if request.method == 'POST':
+        form = UserLoginForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            messages.success(request, f"Saytga xush kelibsiz! {user.username}")
+            return redirect('index')
+
+        if form.errors:
+            for error in form.error_messages.values():
+                messages.error(request, str(error))
+    return render(request, 'login.html')
+
+
+def user_signup(request):
+    if request.method == 'POST':
+        form = UserSignupForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Successfully registered. You can now login.')
+            return redirect('login')
+        else:
+            messages.error(request, 'Registration failed. Please correct the errors.')
+    else:
+        form = UserSignupForm()
+
+    context = {
+        'form': form,
+        'title': 'Sign up'
+    }
+    return render(request, 'signup.html', context)
+
+
+def user_logout(request):
+    logout(request)
+    messages.warning(request, "Siz saytdan chiqdingiz!!!")
+    return redirect('login')

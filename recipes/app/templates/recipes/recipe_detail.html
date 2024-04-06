@@ -2,6 +2,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-8">
@@ -16,7 +25,9 @@
                         <div class="btn-group">
                             <form action="{% url 'like_recipe' recipe.pk %}" method="post">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-secondary">Like: {{ recipe.likes }}</button>
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Like: {{ recipe.likes
+                                    }}
+                                </button>
                             </form>
                             <button type="button" class="btn btn-sm btn-outline-secondary">Views: {{ recipe.views }}
                             </button>
