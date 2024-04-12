@@ -1,16 +1,17 @@
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.models import User
 
-from .forms import RecipeForm, CategoryForm, CommentForm, MealCategoryForm, UserLoginForm, UserSignupForm
+from .forms import RecipeForm, CategoryForm, CommentForm, MealCategoryForm, UserLoginForm, UserSignupForm, UserProfileForm
 from django.contrib import messages
 # Create your views here.
-from .models import Recipe, Category, MealCategory
+from .models import Recipe, Category, MealCategory, UserProfile
 
 
 def bosh_sahifa(request):
     recipes = Recipe.objects.all()[:4]  # Eng oxirgi qo'shilgan 4 ta retseptni tanlash
-
+    user = User.objects.all()
     br_category = MealCategory.objects.filter(category=1)
     lunch_category = MealCategory.objects.filter(category=2)
     dinner_category = MealCategory.objects.filter(category=3)
@@ -166,7 +167,7 @@ def user_login(request):
         if form.errors:
             for error in form.error_messages.values():
                 messages.error(request, str(error))
-    return render(request, 'login.html')
+    return render(request, 'user/login.html')
 
 
 def user_signup(request):
@@ -185,10 +186,54 @@ def user_signup(request):
         'form': form,
         'title': 'Sign up'
     }
-    return render(request, 'signup.html', context)
+    return render(request, 'user/signup.html', context)
 
 
 def user_logout(request):
     logout(request)
     messages.warning(request, "Siz saytdan chiqdingiz!!!")
     return redirect('login')
+
+
+def account_info(request, username):
+    user = User.objects.get(username=username)
+    user_profile = UserProfile.objects.get(user_id=user.id)
+    context = {
+        "user": user,
+        "user_profile": user_profile,
+        "title": f"{user.username} profili "
+    }
+    return render(request, "user/user_profile.html", context)
+
+
+def user_profile_edit(request):
+    try:
+        user_profile = UserProfile.objects.get(user=request.user)
+    except UserProfile.DoesNotExist:
+        user_profile = None
+
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=user_profile)
+        if form.is_valid():
+            user_profile = form.save(commit=False)
+            user_profile.user = request.user
+            user_profile.save()
+            return redirect('index')
+    else:
+        form = UserProfileForm(instance=user_profile)
+
+    return render(request, 'user/user_profile_form.html', {'form': form})
+
+
+def user_profile_create(request):
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES)
+        if form.is_valid():
+            user_profile = form.save(commit=False)
+            user_profile.user = request.user
+            user_profile.save()
+            return redirect('index')
+    else:
+        form = UserProfileForm()
+
+    return render(request, 'user/user_profile_form.html', {'form': form})

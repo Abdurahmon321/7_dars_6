@@ -1,5 +1,5 @@
 from django import forms
-from .models import Recipe, Category, Comment, MealCategory
+from .models import Recipe, Category, Comment, MealCategory, UserProfile
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 
@@ -71,3 +71,8 @@ class UserSignupForm(UserCreationForm):
             raise forms.ValidationError("Passwords do not match.")
         return password2
 
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['img', 'status', 'address', 'phone', 'mobile', 'sayt', 'github', 'instragram', 'telegram', 'facebook']

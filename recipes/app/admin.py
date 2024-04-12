@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Category, Recipe, Comment, MealCategory
+from .models import Category, Recipe, Comment, MealCategory, UserProfile
 
 
 @admin.register(Category)
@@ -38,3 +38,8 @@ class CommentAdmin(admin.ModelAdmin):
 @admin.register(MealCategory)
 class MealCategoryAdmin(admin.ModelAdmin):
     list_display = ['name']
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ["user", "status", "address", "phone"]

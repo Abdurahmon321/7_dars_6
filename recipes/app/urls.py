@@ -39,4 +39,8 @@ urlpatterns = [
     # logout uchun url
     path("logout/", views.user_logout, name="logout"),
 
+    # account uchun url
+    path("account/<str:username>", views.account_info, name="account"),
+    path('user_profile_edit', views.user_profile_edit, name='user_profile_edit'),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
