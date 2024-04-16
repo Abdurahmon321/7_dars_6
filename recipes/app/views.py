@@ -1,22 +1,20 @@
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, HttpResponse
 from django.contrib.auth.models import User
 
-from .forms import RecipeForm, CategoryForm, CommentForm, MealCategoryForm, UserLoginForm, UserSignupForm, UserProfileForm
+from .forms import RecipeForm, CategoryForm, CommentForm, MealCategoryForm, UserLoginForm, UserSignupForm, \
+    UserProfileForm, MessageForm
 from django.contrib import messages
 # Create your views here.
-from .models import Recipe, Category, MealCategory, UserProfile
+from .models import Recipe, Category, MealCategory, UserProfile, Message
 
 
 def bosh_sahifa(request):
     recipes = Recipe.objects.all()[:4]  # Eng oxirgi qo'shilgan 4 ta retseptni tanlash
     user = User.objects.all()
-    br_category = MealCategory.objects.filter(category=1)
-    lunch_category = MealCategory.objects.filter(category=2)
-    dinner_category = MealCategory.objects.filter(category=3)
-    context = {'recipes': recipes, "br_category": br_category,
-               "lunch_category": lunch_category, "dinner_category": dinner_category}
+
+    context = {'recipes': recipes}
     return render(request, 'base.html', context)
 
 
@@ -34,37 +32,45 @@ def category_detail(request, pk):
 
 
 def category_create(request):
-    if request.method == 'POST':
-        form = MealCategoryForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Categoriya yaratildi")
-            return redirect('category_list')
+    if request.user.is_superuser:
+        if request.method == 'POST':
+            form = MealCategoryForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Categoriya yaratildi")
+                return redirect('category_list')
+        else:
+            form = CategoryForm()
+        return render(request, 'category/category_form.html', {'form': form})
     else:
-        form = CategoryForm()
-    return render(request, 'category/category_form.html', {'form': form})
-
+        return HttpResponse("Sizda ruxsat yo'q")
 
 def category_update(request, pk):
-    category = get_object_or_404(MealCategory, pk=pk)
-    if request.method == 'POST':
-        form = CategoryForm(request.POST, instance=category)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Categoriya o'zgartirildi")
-            return redirect('category_list')
+    if request.user.is_superuser:
+        category = get_object_or_404(MealCategory, pk=pk)
+        if request.method == 'POST':
+            form = CategoryForm(request.POST, instance=category)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Categoriya o'zgartirildi")
+                return redirect('category_list')
+        else:
+            form = CategoryForm(instance=category)
+        return render(request, 'category/category_form.html', {'form': form})
     else:
-        form = CategoryForm(instance=category)
-    return render(request, 'category/category_form.html', {'form': form})
+        return HttpResponse("Sizda ruxsat yo'q")
 
 
 def category_delete(request, pk):
-    category = get_object_or_404(MealCategory, pk=pk)
-    if request.method == 'POST':
-        category.delete()
-        messages.success(request, "Categoriya o'chirildi")
-        return redirect('category_list')
-    return render(request, 'category/category_confirm_delete.html', {'category': category})
+    if request.user.is_superuser:
+        category = get_object_or_404(MealCategory, pk=pk)
+        if request.method == 'POST':
+            category.delete()
+            messages.success(request, "Categoriya o'chirildi")
+            return redirect('category_list')
+        return render(request, 'category/category_confirm_delete.html', {'category': category})
+    else:
+        return HttpResponse("Sizda ruxsat yo'q")
 
 
 """ recipelar uchun crud """
@@ -94,11 +100,14 @@ def recipe_detail(request, pk):
 
 
 def recipe_create(request):
+
     if request.method == 'POST':
         form = RecipeForm(request.POST, request.FILES)
 
         if form.is_valid():
-            form.save()
+            recipe = form.save(commit=False)
+            recipe.author = request.user
+            recipe.save()
             messages.success(request, 'Recipe yaratildi')
             return redirect('recipe_list')
     else:
@@ -132,10 +141,13 @@ def recipe_delete(request, pk):
 
 
 def like_recipe(request, recipe_id):
-    recipe = get_object_or_404(Recipe, pk=recipe_id)
-    recipe.likes += 1
-    recipe.save()
-    return redirect('recipe_detail', recipe_id)
+    if request.user.is_authenticated:
+        recipe = get_object_or_404(Recipe, pk=recipe_id)
+        recipe.likes += 1
+        recipe.save()
+        return redirect('recipe_detail', recipe_id)
+    else:
+        return redirect('login')
 
 
 """ filter by category """
@@ -196,33 +208,44 @@ def user_logout(request):
 
 
 def account_info(request, username):
-    user = User.objects.get(username=username)
-    user_profile = UserProfile.objects.get(user_id=user.id)
-    context = {
-        "user": user,
-        "user_profile": user_profile,
-        "title": f"{user.username} profili "
-    }
+    try:
+        user = User.objects.get(username=username)
+        user_profile = UserProfile.objects.get(user_id=user.id)
+        context = {
+            "user": user,
+            "user_profile": user_profile,
+            "title": f"{user.username} profili "
+        }
+    except UserProfile.DoesNotExist:
+        # UserProfile topilmaganida, bo'sh obyekt yaratamiz
+        user_profile = UserProfile.objects.create(user=user)
+        context = {
+            "user": user,
+            "user_profile": user_profile,
+            "title": f"{user.username} profili "
+        }
     return render(request, "user/user_profile.html", context)
 
-
 def user_profile_edit(request):
-    try:
-        user_profile = UserProfile.objects.get(user=request.user)
-    except UserProfile.DoesNotExist:
-        user_profile = None
+    if request.user:
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+        except UserProfile.DoesNotExist:
+            user_profile = None
 
-    if request.method == 'POST':
-        form = UserProfileForm(request.POST, request.FILES, instance=user_profile)
-        if form.is_valid():
-            user_profile = form.save(commit=False)
-            user_profile.user = request.user
-            user_profile.save()
-            return redirect('index')
+        if request.method == 'POST':
+            form = UserProfileForm(request.POST, request.FILES, instance=user_profile)
+            if form.is_valid():
+                user_profile = form.save(commit=False)
+                user_profile.user = request.user
+                user_profile.save()
+                return redirect('index')
+        else:
+            form = UserProfileForm(instance=user_profile)
+
+        return render(request, 'user/user_profile_form.html', {'form': form})
     else:
-        form = UserProfileForm(instance=user_profile)
-
-    return render(request, 'user/user_profile_form.html', {'form': form})
+        return HttpResponse("Page not found")
 
 
 def user_profile_create(request):
@@ -237,3 +260,24 @@ def user_profile_create(request):
         form = UserProfileForm()
 
     return render(request, 'user/user_profile_form.html', {'form': form})
+
+
+"""Message uchun """
+
+
+def send_message(request):
+    if request.method == 'POST':
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.sender = request.user
+            message.save()
+            return redirect('inbox')  # Yuborilgan xabarlar ro'yxati
+    else:
+        form = MessageForm()
+    return render(request, 'send_message.html', {'form': form})
+
+
+def inbox(request):
+    received_messages = Message.objects.filter(receiver=request.user)
+    return render(request, 'inbox.html', {'messages': received_messages})

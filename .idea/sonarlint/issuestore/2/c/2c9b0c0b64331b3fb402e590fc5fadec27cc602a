@@ -1,3 +1,3 @@
 
-Fpython:S1481"(Remove the unused local variable "user".(ï½× 8ƒµÚ‘ì1
-Opython:S1172†"/Remove the unused function parameter "request".(÷ÒÛ8ƒµÚ‘ì1
+vpython:S1192."RDefine a constant instead of duplicating this literal "Sizda ruxsat yo'q" 3 times.(†ää°şÿÿÿÿ8ù¹ÛÃî1
+Fpython:S1481"(Remove the unused local variable "user".(ï½× 8ú¹ÛÃî1

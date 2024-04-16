@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load app_extras %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -38,9 +39,10 @@
                         Breakfast
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="breakfastDropdown">
-                        {% for br_category in br_category %}
-                        <li><a class="dropdown-item" href="{% url 'recipe_filter_by' br_category.pk %}">{{
-                            br_category.name }}</a></li>
+                        {% br_categories as br_categories %}
+                        {% for br_category in br_categories %}
+                        <li><a class="dropdown-item" href="{% url 'recipe_filter_by' br_category.pk %}">
+                            {{ br_category.name }}</a></li>
                         {% endfor %}
                     </ul>
                 </li>
@@ -50,9 +52,10 @@
                         Lunch
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="lunchDropdown">
+                        {% lunch_categories as lunch_category %}
                         {% for lunch_category in lunch_category %}
-                        <li><a class="dropdown-item" href="{% url 'recipe_filter_by' lunch_category.pk %}">{{
-                            lunch_category.name }}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'recipe_filter_by' lunch_category.pk %}">
+                            {{ lunch_category.name }}</a></li>
                         {% endfor %}
                     </ul>
                 </li>
@@ -62,9 +65,10 @@
                         Dinner
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="dinnerDropdown">
+                        {% dinner_categories as dinner_category %}
                         {% for dinner_category in dinner_category %}
-                        <li><a class="dropdown-item" href="{% url 'recipe_filter_by' dinner_category.pk %}">{{
-                            dinner_category.name }}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'recipe_filter_by' dinner_category.pk %}">
+                            {{ dinner_category.name }}</a></li>
                         {% endfor %}
                     </ul>
                 </li>
@@ -85,8 +89,27 @@
             </ul>
             <form class="d-flex">
                 {% if user.is_authenticated %}
-                <a href="{% url 'logout' %}" class="btn btn-outline-primary">Chiqish</a>
-                <a href="{% url 'account' user.username %}" class="btn btn-outline-primary">Account</a>
+                <a href="{% url 'logout' %}" class="btn btn-outline-primary" style="border-radius: 2rem">Chiqish</a>
+                <!-- Avatar -->
+                <div class="dropdown" style="padding: 5px">
+                    <a
+                            data-mdb-dropdown-init
+                            class="dropdown-toggle d-flex align-items-center hidden-arrow"
+                            href="#"
+                            id="navbarDropdownMenuAvatar"
+                            role="button"
+                            aria-expanded="false"
+                    >
+                        <a href="{% url 'account' request.user.username %}"><img
+                                src="https://mdbcdn.b-cdn.net/img/new/avatars/2.webp"
+                                class="rounded-circle"
+                                height="25"
+                                alt="Black and White Portrait of a Man"
+                                loading="lazy"
+                        /></a>
+                    </a>
+                </div>
+
                 {% else %}
                 <a href="{% url 'login' %}" class="btn btn-outline-success me-2" type="submit">Login</a>
                 <a href="{% url 'signup' %}" class="btn btn-outline-primary" type="submit">Sign Up</a>

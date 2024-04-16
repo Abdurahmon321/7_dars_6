@@ -27,6 +27,7 @@ class Recipe(models.Model):
     views = models.PositiveIntegerField(default=0)
     likes = models.PositiveIntegerField(default=0)
     image = models.ImageField(upload_to='recipe_images/')
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
@@ -63,3 +64,13 @@ class UserProfile(models.Model):
 
         def __str__(self):
             return f"{ self.user.username }"
+
+
+class Message(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"From {self.sender} to {self.receiver}: {self.message}"

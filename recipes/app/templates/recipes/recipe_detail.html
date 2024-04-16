@@ -3,14 +3,14 @@
 
 {% block content %}
 {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li class="alert alert-{{ message.tags }}">
-                {{ message }}
-            </li>
-        {% endfor %}
-    </ul>
-    {% endif %}
+<ul class="messages">
+    {% for message in messages %}
+    <li class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-8">
@@ -25,8 +25,8 @@
                         <div class="btn-group">
                             <form action="{% url 'like_recipe' recipe.pk %}" method="post">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-secondary">Like: {{ recipe.likes
-                                    }}
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Like:
+                                    {{ recipe.likes }}
                                 </button>
                             </form>
                             <button type="button" class="btn btn-sm btn-outline-secondary">Views: {{ recipe.views }}
@@ -58,6 +58,8 @@
                 </div>
             </div>
         </div>
+        {% if user.is_authenticated %}
+        {% if user.id == recipe.author_id %}
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
@@ -67,6 +69,12 @@
                 </div>
             </div>
         </div>
+        {% else %}
+        <div class="col-md-4">
+            <a href="{% url 'account' recipe.author.username  %}" class="btn btn-info btn-sm">View Author Profile</a>
+        </div>
+        {% endif %}
+        {% endif %}
     </div>
 </div>
 
