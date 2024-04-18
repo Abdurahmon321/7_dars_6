@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 
 from .forms import RecipeForm, CategoryForm, CommentForm, MealCategoryForm, UserLoginForm, UserSignupForm, \
     UserProfileForm, MessageForm
+from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
 # Create your views here.
 from .models import Recipe, Category, MealCategory, UserProfile, Message
@@ -31,6 +32,7 @@ def category_detail(request, pk):
     return render(request, 'category/category_detail.html', {'category': category})
 
 
+@permission_required("app.add_meal_category", login_url='index')
 def category_create(request):
     if request.user.is_superuser:
         if request.method == 'POST':
@@ -45,6 +47,8 @@ def category_create(request):
     else:
         return HttpResponse("Sizda ruxsat yo'q")
 
+
+@permission_required("app.change_meal_category", login_url="index")
 def category_update(request, pk):
     if request.user.is_superuser:
         category = get_object_or_404(MealCategory, pk=pk)
@@ -61,6 +65,7 @@ def category_update(request, pk):
         return HttpResponse("Sizda ruxsat yo'q")
 
 
+@permission_required("app.delete_meal_category", login_url="index")
 def category_delete(request, pk):
     if request.user.is_superuser:
         category = get_object_or_404(MealCategory, pk=pk)
@@ -99,6 +104,7 @@ def recipe_detail(request, pk):
     return render(request, 'recipes/recipe_detail.html', {'recipe': recipe, 'comments': comments, 'form': form})
 
 
+@permission_required("app.add_recipe", login_url="index")
 def recipe_create(request):
 
     if request.method == 'POST':
@@ -115,6 +121,7 @@ def recipe_create(request):
     return render(request, 'recipes/recipe_form.html', {'form': form})
 
 
+@permission_required("app.change_recipe", login_url="index")
 def recipe_update(request, pk):
     recipe = get_object_or_404(Recipe, pk=pk)
     if request.method == 'POST':
@@ -128,6 +135,7 @@ def recipe_update(request, pk):
     return render(request, 'recipes/recipe_form.html', {'form': form})
 
 
+@permission_required("app.delete_recipe", login_url="index")
 def recipe_delete(request, pk):
     recipe = get_object_or_404(Recipe, pk=pk)
     if request.method == 'POST':
@@ -187,10 +195,8 @@ def user_signup(request):
         form = UserSignupForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Successfully registered. You can now login.')
+            messages.success(request, "Muvaffaqiyatli ro'yxatdan o'tdingiz. Endi kiring.")
             return redirect('login')
-        else:
-            messages.error(request, 'Registration failed. Please correct the errors.')
     else:
         form = UserSignupForm()
 
@@ -225,6 +231,7 @@ def account_info(request, username):
             "title": f"{user.username} profili "
         }
     return render(request, "user/user_profile.html", context)
+
 
 def user_profile_edit(request):
     if request.user:

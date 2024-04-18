@@ -1,6 +1,9 @@
 from django import forms
+from django.core.exceptions import ValidationError
+
 from .models import Recipe, Category, Comment, MealCategory, UserProfile, Message
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 
 
@@ -53,6 +56,12 @@ class UserLoginForm(AuthenticationForm):
 
 class UserSignupForm(UserCreationForm):
     email = forms.EmailField(max_length=254, help_text='Required. Inform a valid email address.')
+
+    def clean_password1(self):
+        password1 = self.cleaned_data.get('password1')
+        if len(password1) < 8:
+            raise ValidationError(_('Parol kamida 8 ta belgidan iborat bo\'lishi kerak.'))
+        return password1
 
     class Meta:
         model = User

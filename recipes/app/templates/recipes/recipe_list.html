@@ -34,7 +34,9 @@
         </div>
         {% endfor %}
     </div>
+    {% if perms.app.add_recipe %}
     <a href="{% url 'recipe_create' %}" class="btn btn-success">Create recipe</a>
+    {% endif %}
 </div>
 
 
